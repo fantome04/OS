@@ -7,12 +7,12 @@
 #include <netdb.h>
 #include <unistd.h>
 
-const std::string SERVER_IP = "217.113.2.233";
+const std::string SERVER_IP = "217.113.2.231";
 const int SERVER_PORT = 80;
 const std::string FILENAME = "ysu.html";
 
 int main(){
-    std::string request = "GET / HTTP/1.1\r\n";
+    std::string request = "GET /main/ HTTP/1.1\r\n";
     request += "Host: www.ysu.am\r\n";
     request += "Connection: close\r\n\r\n";
 
