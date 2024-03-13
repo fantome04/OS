@@ -50,6 +50,12 @@ void philosoph(std::size_t philNum, sem_t* sems) {
 
 int main() {
     sem_t* sems = (sem_t*)mmap(NULL, phil_num * sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    int shm_fd = shm_open("/shared_mem", O_CREAT | O_RDWR, 0666);
+    if (shm_fd == -1) {
+        std::cerr << "shm_open failed" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     std::vector<int> pids(phil_num);
 
     for(int i = 0; i < phil_num; ++i) {
@@ -83,6 +89,8 @@ int main() {
     }
 
     munmap(sems, phil_num * sizeof(sem_t));
+
+    shm_unlink("/shared_mem");
 
     return 0;
 }
