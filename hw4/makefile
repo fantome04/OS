@@ -2,4 +2,4 @@ run: philosoph
 	./philosoph
 
 philosoph: philosophers.cpp
-	g++ philosophers.cpp -o philosoph
+	g++ philosophers.cpp -o philosoph -pthread
