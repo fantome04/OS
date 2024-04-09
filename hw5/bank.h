@@ -3,10 +3,11 @@
 
 #include "bank_cell.h"
 #include <vector>
+class BankCell;
 
 class Bank{
 public:
-    Bank(int num);
+    Bank(int* bankArray);
 
     int get_cell_curr_balance(int num) const;
     int get_cell_min_balance(int num) const;
@@ -19,8 +20,10 @@ public:
     bool set_cell_min_amount(int num, int amount);
     bool set_cell_max_amount(int num, int amount);
 
-private:
-    std::vector<BankCell> cells;
+    unsigned int bankSize;
+    BankCell cells[];
+
+    BankCell& operator[](unsigned int ind);
 };
 
 

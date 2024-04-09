@@ -1,34 +1,35 @@
 #include "bank_cell.h"
-
+#include <iostream>
 
 BankCell::BankCell()
         :current_balance(0) {}
 
-int BankCell::get_min_balance() {
+int BankCell::get_min_balance() const {
     return min_amount;
 }
 
-int BankCell::get_max_balance() {
+int BankCell::get_max_balance() const {
     return max_amount;
 }
 
-int BankCell::get_curr_balance() {
+int BankCell::get_curr_balance() const {
+    std::cout<<__LINE__<<std::endl;
     return current_balance;
 }
 
 void BankCell::freeze() {
-    is_frozen = true;
+    frozen = true;
 }
 
 void BankCell::unfreeze() {
-    is_frozen = false;
+    frozen = false;
 }
 
 bool BankCell::is_frozen() {
-    return is_frozen;
+    return frozen;
 }
 
-bool BankCell::receive_amount(int amount) {} {
+bool BankCell::receive_amount(int amount)  {
     if(current_balance + amount <= max_amount) {
         current_balance += amount;
         return true;
@@ -50,7 +51,7 @@ void BankCell::set_min_amount(int amount) {
     min_amount = amount;
 }
 
-void set_max_amount(int amount) {
+void BankCell::set_max_amount(int amount) {
     max_amount = amount;
 }
 

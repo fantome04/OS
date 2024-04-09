@@ -1,10 +1,8 @@
 #ifndef BANKCELL
 #define BANKCELL
 
-#include "bank.h"
-
 class BankCell{
-private:
+public:
     BankCell();
     int get_min_balance() const;
     int get_max_balance() const;
@@ -17,13 +15,12 @@ private:
     void set_min_amount(int amount);
     void set_max_amount(int amount);
 
-private:
+public:
     int current_balance;
     int min_amount = 0;
     int max_amount = 1000;
     bool frozen;
 
-    friend Bank;
 };
 
 #endif
