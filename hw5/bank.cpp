@@ -2,13 +2,11 @@
 #include <iostream>
 
 int Bank::get_cell_curr_balance(int num) const {
-    std::cout<<__LINE__<<std::endl;
     if(num < 0 || num >= bankSize)
     {
-        std::cout<<__LINE__<<std::endl;
         return -1;
     }
-    std::cout<<__LINE__<<std::endl;
+
     return cells[num].get_curr_balance();
 }
 int Bank::get_cell_min_balance(int num) const {

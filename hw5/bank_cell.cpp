@@ -13,7 +13,6 @@ int BankCell::get_max_balance() const {
 }
 
 int BankCell::get_curr_balance() const {
-    std::cout<<__LINE__<<std::endl;
     return current_balance;
 }
 
