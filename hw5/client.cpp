@@ -9,8 +9,14 @@
 #include <cerrno>
 #include <sstream>
 #include <semaphore.h>
+#include <string>
 
 #include "bank.h"
+
+void logic(std::string input);
+Bank* ptr;
+sem_t* sems;
+int* id;
 
 int main()
 {
@@ -23,7 +29,7 @@ int main()
         exit(errno);
     }
 
-    sem_t* sems = (sem_t*)mmap(nullptr, n*sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, sem_shm, 0);
+    sems = (sem_t*)mmap(nullptr, n*sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, sem_shm, 0);
 
     for(int i = 0; i < n; ++i)
     {
@@ -41,7 +47,7 @@ int main()
         std::cerr <<"sem shm open"<<std::endl;
         exit(errno);
     }
-    int* id = (int*)mmap(nullptr, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, client_shm, 0);
+    id = (int*)mmap(nullptr, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, client_shm, 0);
     (*id)+=1;
     std::cout<<*id<<std::endl;
     const char* shm_name = "/bank_shared_mem";
@@ -52,172 +58,24 @@ int main()
         std::cerr << "shm_open" <<std::endl;
         exit(errno);
     }
-    //shm sem open pushback
 
     std::size_t size = sizeof(Bank) + n * sizeof(BankCell);
 
-    Bank* ptr = (Bank*)mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    ptr = (Bank*)mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if(ptr == MAP_FAILED)
     {
         std::cerr << "init mmap" << std::endl;
         exit(EXIT_FAILURE);
     }
-    //std::cout<< ptr->cells[0].max_amount;
+    
     while(true)
     {
         std::string input;
         std::getline(std::cin, input);
-        if(input == "exit")
+        std::string res = logic(input);`
+        if(res == "exit")
             break;
-        std::stringstream str(input);
-        std::string temp;
-        std::vector<std::string> in;
-        while(str >> temp) {
-            in.push_back(temp);
-        }
-        //current 5
-        //minimum 5
-        //maximum 5
-        //freeze 5
-        //unfreeze 5
-        //transfer 5 6 50
-        //addall 50
-        //suball 50
-        //setmin 5 50
-        //setmax 5 50
-        if(in.size() == 2)
-        {
-            if(in[0] == "current")
-            {
-                sem_wait(&sems[*id]);
-                int res = ptr->get_cell_curr_balance(std::stoi(in[1]) - 1);
-                if(res == -1)
-                    std::cout << "invalid id"<<std::endl;
-                else
-                    std::cout << "Current balance for cell number "<<in[1]<<": "<<res<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "minimum")
-            {
-                sem_wait(&sems[*id]);
-                int res = ptr->get_cell_min_balance(std::stoi(in[1]) - 1);
-                if(res == -1)
-                    std::cout << "invalid id"<<std::endl;
-                else
-                    std::cout << "Minimum balance for cell number "<<in[1]<<": "<<res<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "maximum")
-            {
-                sem_wait(&sems[*id]);
-                int res = ptr->get_cell_max_balance(std::stoi(in[1]) - 1);
-                if(res == -1)
-                    std::cout << "invalid id"<<std::endl;
-                else
-                    std::cout << "Maximum balance for cell number "<<in[1]<<": "<<res<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "freeze")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->freeze_cell(std::stoi(in[1]) - 1);
-                if(!res)
-                    std::cout << "invalid id"<<std::endl;
-                else
-                    std::cout << "Cell number "<<in[1]<<" successfully frozen"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "unfreeze")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->unfreeze_cell(std::stoi(in[1]) - 1);
-                if(!res)
-                    std::cout << "invalid id"<<std::endl;
-                else
-                    std::cout << "Cell number "<<in[1]<<" successfully unfrozen"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "addall")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->add_to_all(std::stoi(in[1]) - 1);
-                if(!res)
-                    std::cout << "invalid operation" <<std::endl;
-                else
-                    std::cout << "Successfully added " << in[1] <<"to all cells"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "suball")
-            {
-                sem_post(&sems[*id]);
-                bool res = ptr->sub_from_all(std::stoi(in[1]) - 1);
-                if(!res)
-                    std::cout << "invalid operation" <<std::endl;
-                else
-                    std::cout << "Successfully subbed " << in[1] <<"from all cells"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else
-            {
-                sem_wait(&sems[*id]);
-                std::cout<<"invalid input"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-        }
-        else if(in.size() == 3)
-        {
-            if(in[0] == "setmin")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->set_cell_min_amount(std::stoi(in[1]) - 1, std::stoi(in[2]));
-                if(!res)
-                    std::cout<<"invalid operation"<<std::endl;
-                else
-                    std::cout<<"Minimum for cell "<<in[1]<<" is set to "<<in[2]<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else if(in[0] == "setmax")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->set_cell_max_amount(std::stoi(in[1]) - 1, std::stoi(in[2]));
-                if(!res)
-                    std::cout<<"invalid operation"<<std::endl;
-                else
-                    std::cout<<"Maximum for cell "<<in[1]<<" is set to "<<in[2]<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else
-            {
-                sem_wait(&sems[*id]);
-                std::cout << "invalid input" <<std::endl;
-                sem_post(&sems[*id]);
-            }
-        }
-        else if(in.size() == 4)
-        {
-            if(in[0] == "transfer")
-            {
-                sem_wait(&sems[*id]);
-                bool res = ptr->transfer(std::stoi(in[1]) - 1, std::stoi(in[2]) - 1, std::stoi(in[3]));
-                if(!res)
-                    std::cout<<"invalid operation"<<std::endl;
-                else
-                    std::cout<<"Successfully transferred "<<in[3] <<" from " <<in[1]<<" to "<<in[2]<<std::endl;
-                sem_post(&sems[*id]);
-            }
-            else
-            {
-                sem_wait(&sems[*id]);
-                std::cout<<"invalid input"<<std::endl;
-                sem_post(&sems[*id]);
-            }
-        }
-        else
-        {
-            sem_wait(&sems[*id]);
-            std::cout<<"invalid input"<<std::endl;
-            sem_post(&sems[*id]);
-        }
+        std::cout << res;
     }
 
     for (int i = 0; i < n; ++i) {
@@ -262,4 +120,149 @@ int main()
     }
 
     return 0;
+}
+
+void logic(std::string input)
+{
+    std::stringstream str(input);
+    std::string temp;
+    std::vector<std::string> in;
+    while(str >> temp) {
+        in.push_back(temp);
+    }
+    std::string str;
+ 
+    if(in.size() == 2)
+    {
+        if(in[0] == "current")
+        {
+            sem_wait(&sems[*id]);
+            int res = ptr->get_cell_curr_balance(std::stoi(in[1]) - 1);
+            if(res == -1)
+                str = str + "invalid id";
+            else
+                str = str + "Current balance for cell number " + in[1] + ": " + std::to_string(res);
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "minimum")
+        {
+            sem_wait(&sems[*id]);
+            int res = ptr->get_cell_min_balance(std::stoi(in[1]) - 1);
+            if(res == -1)
+                str = str + "invalid id";
+            else
+		str = str + "Minimum balance for cell number " + in[1] + ": " + std::to_string(res);    
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "maximum")
+        {
+            sem_wait(&sems[*id]);
+            int res = ptr->get_cell_max_balance(std::stoi(in[1]) - 1);
+            if(res == -1)
+                str = str + "invalid id";
+            else
+                str = str + "Maximum balance for cell number " + in[1] + ": " + std::to_string(res);
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "freeze")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->freeze_cell(std::stoi(in[1]) - 1);
+            if(!res)
+                str = str + "invalid id";
+            else
+                str = str + "Cell number " + in[1] + " successfully frozen";
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "unfreeze")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->unfreeze_cell(std::stoi(in[1]) - 1);
+            if(!res)
+                str = str + "invalid id";
+            else
+                str = str + "Cell number " + in[1] + " successfully unfrozen";
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "addall")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->add_to_all(std::stoi(in[1]) - 1);
+            if(!res)
+                str = str + "invalid id";
+            else
+                str = str + "Successfully added " + in[1] + " to all cells";
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "suball")
+        {
+            sem_post(&sems[*id]);
+            bool res = ptr->sub_from_all(std::stoi(in[1]) - 1);
+            if(!res)
+                str = str + "invalid id";
+            else
+                str = str + "Successfully subbed " + in[1] + " from all cells";
+            sem_post(&sems[*id]);
+        }
+        else
+        {
+            sem_wait(&sems[*id]);
+            str = str + "invalid id";
+            sem_post(&sems[*id]);
+        }
+    }
+    else if(in.size() == 3)
+    {
+        if(in[0] == "setmin")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->set_cell_min_amount(std::stoi(in[1]) - 1, std::stoi(in[2]));
+            if(!res)
+                str = str + "invalid operation";
+            else
+                str = str + "Minimum for cell " + in[1] + " is set to "+ in[2];
+            sem_post(&sems[*id]);
+        }
+        else if(in[0] == "setmax")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->set_cell_max_amount(std::stoi(in[1]) - 1, std::stoi(in[2]));
+            if(!res)
+                str = str + "invalid operation";
+            else
+                str = str + "Maximum for cell " + in[1] + " is set to " + in[2] + std::endl;
+            sem_post(&sems[*id]);
+        }
+        else
+        {
+            sem_wait(&sems[*id]);
+            str = str + "invalid input";
+            sem_post(&sems[*id]);
+        }
+    }
+    else if(in.size() == 4)
+    {
+        if(in[0] == "transfer")
+        {
+            sem_wait(&sems[*id]);
+            bool res = ptr->transfer(std::stoi(in[1]) - 1, std::stoi(in[2]) - 1, std::stoi(in[3]));
+            if(!res)
+                str = str + "invalid operation";
+            else
+                str = str + "Successfully transferred " + in[3] + " from " + in[1] + " to " + in[2] + std::endl;
+            sem_post(&sems[*id]);
+        }
+        else
+        {
+            sem_wait(&sems[*id]);
+            str = str + "invalid input";
+            sem_post(&sems[*id]);
+        }
+    }
+    else {
+        sem_wait(&sems[*id]);
+        str = str + "invalid input";
+        sem_post(&sems[*id]);
+    }
+    return str;
 }

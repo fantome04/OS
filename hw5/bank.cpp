@@ -9,6 +9,7 @@ int Bank::get_cell_curr_balance(int num) const {
 
     return cells[num].get_curr_balance();
 }
+
 int Bank::get_cell_min_balance(int num) const {
     if(num < 0 || num >= bankSize) {
         return -1;
