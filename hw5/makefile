@@ -1,3 +1,8 @@
+run: init client destroy
+	./init
+	./client
+	./destroy
+
 run_init: init
 	./init
 
@@ -6,9 +11,6 @@ run_client: client
 
 run_destroy: destroy
 	./destroy
-
-run_init: init
-	./init
 
 release: init client destroy
 
@@ -29,7 +31,7 @@ client_d: client.cpp bank.o bank_cell.o
 	g++ client.cpp bank.o bank_cell.o -g -o client_d -lrt
 
 destroy_d: destroy.cpp bank.o bank_cell.o
-       g++ destroy.cpp bank.o bank_cell.o -g -o destroy_d -lrt	
+	g++ destroy.cpp bank.o bank_cell.o -g -o destroy_d -lrt
 
 debug_init: init_d
 	gdb init_d

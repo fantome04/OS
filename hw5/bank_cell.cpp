@@ -1,8 +1,23 @@
 #include "bank_cell.h"
 #include <iostream>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <semaphore.h>
+#include <string>
 
-BankCell::BankCell()
-        :current_balance(0) {}
+BankCell::BankCell(int num)
+        :current_balance(0), num(num) {
+    std::string name = std::to_string(num);
+    cell_sem = sem_open(name.c_str(), O_CREAT | O_EXCL, 1, 1);
+    if(cell_sem == SEM_FAILED) {
+        std::cout << "UA" << std::endl;
+        exit(errno);
+    }
+}
+
+BankCell::~BankCell() {
+    sem_close(cell_sem);
+}
 
 int BankCell::get_min_balance() const {
     return min_amount;
