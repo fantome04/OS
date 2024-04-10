@@ -8,7 +8,7 @@ run2: barman
 	./barman
 
 barman: barman.cpp
-	g++ barman.cpp -o barman
-
+	g++ barman.cpp -o barman -pthread
+ 
 clean:
 	rm *.o ex1 barman
