@@ -11,7 +11,7 @@
 
 int main()
 {
-    const int n = 2;
+    const int n = 10;
     const char* sem_name = "/sem_shared_mem";
     int sem_shm = shm_open(sem_name, O_CREAT | O_RDWR | O_TRUNC, 0666);
     if(sem_shm == -1)
